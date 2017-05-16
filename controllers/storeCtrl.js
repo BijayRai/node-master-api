@@ -1,19 +1,10 @@
 require('../config/config')
 const mongoose = require('mongoose')
 const Store = mongoose.model('Store')
-const utils = require('../utils/storeUtils')
+const ImageUploader = require('../utils/ImageUploader')
 const slug = require('slugs') //wordpress permalink?
 const multer = require('multer')
-const jimp = require('jimp')
 const sharp = require('sharp')
-const uuid = require('uuid') //give all images unique ids
-const AWS = require('aws-sdk')
-const S3_BUCKET = process.env.S3_BUCKET
-const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID
-const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY
-const REGION = process.env.REGION
-const s3 = new AWS.S3()
-// AWS.config.loadFromPath('./config/config.json');
 
 // define where to store and what types are allowed
 const multerOptions = {
@@ -40,12 +31,9 @@ const multerOptions = {
 // upload also checks file type for security
 exports.upload = multer(multerOptions).single('photo')
 exports.resize = async (req, res, next) => {
-  // console.log('resize')
   // check if there is no new file to resize when we save
   // multer automatically knows if a file was uploaded
   // multer puts the file property on the request
-  console.log('resize')
-  console.log(req.file)
 
   if (!req.file) {
     next() // no file so skip to the next middleware
@@ -53,41 +41,21 @@ exports.resize = async (req, res, next) => {
   }
 
   try {
-    const extension = req.file.mimetype.split('/')[1]
-    const fileName = `${uuid.v4()}.${extension}`
-    // TODO: Set user/filename.jpg
-    const bucketName = 'nodeintromaster/' + 'user1Bucket'
+    console.log('starting resize image')
+    console.log(req.file)
 
-    req.body.photo = `https://s3.amazonaws.com/${bucketName}/${fileName}`
-
+    // Resize photo
     const photo = await sharp(req.file.buffer).resize(800).toBuffer()
 
-    // AWS - POTENTIAL MIDDLEWARE?
-    const s3Bucket = new AWS.S3({ params: { Bucket: 'nodeintromaster' } })
+    //1 pass in file to new Class()
+    const s3File = new ImageUploader.S3Loader(req.file)
 
-    const data = { Key: fileName, Body: photo }
+    //2 new class returns path
+    req.body.photo = s3File.getUrlPath()
 
-    AWS.config.update({
-      accessKeyId: AWS_ACCESS_KEY_ID,
-      secretAccessKey: AWS_SECRET_ACCESS_KEY,
-      region: REGION
-    })
-
-    var params = {
-      Bucket: bucketName,
-      Key: data.Key,
-      Body: data.Body,
-      ContentType: 'image/' + extension,
-      ACL: 'public-read'
-    }
-
-    s3.putObject(params, function(err, res) {
-      if (err) {
-        console.log('Error uploading data: ', err)
-      } else {
-        console.log('Successfully uploaded data to myBucket/myKey', res)
-        next()
-      }
+    //3 data is stored in class passing in the edited photo buffer - save/upload
+    s3File.uploadPhoto(photo, () => {
+      next()
     })
   } catch (e) {
     console.log('error try catch')
@@ -116,7 +84,7 @@ exports.createStore = async (req, res) => {
 
 exports.getStores = async (req, res) => {
   try {
-    const stores = await Store.find()
+    const stores = await Store.find().sort([['_id', 1]])
     return res.send({ stores })
   } catch (e) {
     return res.status(422).send({ message: e.message })
@@ -124,15 +92,8 @@ exports.getStores = async (req, res) => {
 }
 
 exports.updateStore = async (req, res) => {
-  // const storeObj = utils.convertTagsToArray(req.body)
-  // storeObj.slug = slug(storeObj.name)
   console.log('updateStore')
   console.log(req.body.photo)
-
-  //if its an object - it measn user did not update photo
-  // if (typeof req.body.photo === Object) {
-  //   delete req.body.photo
-  // }
 
   try {
     //query, data, options
