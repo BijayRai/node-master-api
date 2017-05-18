@@ -91,6 +91,23 @@ exports.getStores = async (req, res) => {
   }
 }
 
+exports.getStore = async (req, res) => {
+  console.log('slug')
+  console.log(req.params)
+
+  try {
+    const store = await Store.find({
+      slug: req.params.slug
+    })
+    console.log('store')
+    console.log(store)
+
+    return res.send({ store })
+  } catch (e) {
+    return res.status(422).send({ message: e.message })
+  }
+}
+
 exports.updateStore = async (req, res) => {
   console.log('updateStore')
   console.log(req.body.photo)
@@ -106,6 +123,23 @@ exports.updateStore = async (req, res) => {
       }
     ).exec() //execute query and returns a promise
     return res.send({ store })
+  } catch (e) {
+    return res.status(422).send({ message: e.message })
+  }
+}
+
+exports.getTagsList = async (req, res) => {
+  try {
+    const tag = req.params.tag
+    const tagQuery = tag !== 'undefined' ? tag : { $exists: true } // if no tag - use query to return us any store with at least 1 tag
+
+    // example of multiple promieses sent and resolved
+    const tagsPromise = Store.getTagsList()
+    const storesPromise = Store.find({ tags: tagQuery })
+
+    const results = await Promise.all([tagsPromise, storesPromise])
+
+    return res.send(results)
   } catch (e) {
     return res.status(422).send({ message: e.message })
   }

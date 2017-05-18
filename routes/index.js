@@ -13,7 +13,9 @@ router.get('/', (req, res) => {
 
 // chain functions for uploading images -> data
 router.post('/add', storeCtrl.upload, storeCtrl.resize, storeCtrl.createStore)
+router.get('/store/:slug', storeCtrl.getStore)
 router.get('/stores', storeCtrl.getStores)
+router.get('/tags/:tag*?', storeCtrl.getTagsList)
 router.post(
   '/update',
   storeCtrl.upload,
