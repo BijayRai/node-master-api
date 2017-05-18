@@ -1,4 +1,3 @@
-require('../config/config')
 const mongoose = require('mongoose')
 const Store = mongoose.model('Store')
 const ImageUploader = require('../utils/ImageUploader')
