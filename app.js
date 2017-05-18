@@ -38,28 +38,28 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 //FRONTEND
 // Exposes a bunch of methods for validating data. Used heavily on userController.validateRegister
-app.use(expressValidator())
+// app.use(expressValidator())
 
 //FRONTEND
 // populates req.cookies with any cookies that came along with the request
-app.use(cookieParser())
+// app.use(cookieParser())
 
 //FRONTEND
 // Sessions allow us to store data on visitors from request to request
 // This keeps users logged in and allows us to send flash messages
-app.use(
-  session({
-    secret: process.env.SECRET,
-    key: process.env.KEY,
-    resave: false,
-    saveUninitialized: false,
-    store: new MongoStore({ mongooseConnection: mongoose.connection })
-  })
-)
+// app.use(
+//   session({
+//     secret: process.env.SECRET,
+//     key: process.env.KEY,
+//     resave: false,
+//     saveUninitialized: false,
+//     store: new MongoStore({ mongooseConnection: mongoose.connection })
+//   })
+// )
 
 // // Passport JS is what we use to handle our logins
-app.use(passport.initialize())
-app.use(passport.session())
+// app.use(passport.initialize())
+// app.use(passport.session())
 
 //????
 // // The flash middleware let's us use req.flash('error', 'Shit!'), which will then pass that message to the next page the user requests
@@ -77,10 +77,10 @@ app.use(passport.session())
 
 //FRONTEND
 // promisify some callback based APIs
-app.use((req, res, next) => {
-  req.login = promisify(req.login, req)
-  next()
-})
+// app.use((req, res, next) => {
+//   req.login = promisify(req.login, req)
+//   next()
+// })
 
 //REMOVE
 // After allllll that above middleware, we finally handle our own routes!
