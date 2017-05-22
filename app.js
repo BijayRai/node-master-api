@@ -25,8 +25,20 @@ const app = express()
 // view engine setup
 // app.set('views', path.join(__dirname, 'views')) // this is the folder where we keep our pug files
 // app.set('view engine', 'pug') // we use the engine pug, mustache or EJS work great too
-
-app.use(cors()) // cors is a middleware for express
+app.use(cookieParser())
+var originsWhitelist = [
+  'http://localhost:3000', //this is my front-end url for development
+  'http://www.myproductionurl.com'
+]
+var corsOptions = {
+  origin: function(origin, callback) {
+    var isWhitelisted = originsWhitelist.indexOf(origin) !== -1
+    callback(null, isWhitelisted)
+  },
+  credentials: true
+}
+//here is the magic
+app.use(cors(corsOptions)) // cors is a middleware for express
 
 // REMOVE
 // serves up static files from the public folder. Anything in public/ will just be served up as the file it is
@@ -38,7 +50,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 //FRONTEND
 // Exposes a bunch of methods for validating data. Used heavily on userController.validateRegister
-// app.use(expressValidator())
+app.use(expressValidator())
 
 //FRONTEND
 // populates req.cookies with any cookies that came along with the request
@@ -47,12 +59,21 @@ app.use(bodyParser.urlencoded({ extended: true }))
 //FRONTEND
 // Sessions allow us to store data on visitors from request to request
 // This keeps users logged in and allows us to send flash messages
+// app.use(session({
+//   secret: 'keyboard cat',
+//   resave: false,
+//   saveUninitialized: true,
+//   cookie: { secure: false }
+// }))
 // app.use(
 //   session({
 //     secret: process.env.SECRET,
 //     key: process.env.KEY,
 //     resave: false,
 //     saveUninitialized: false,
+//     path: '/',
+//     domain: '',
+//     cookie: { secure: false },
 //     store: new MongoStore({ mongooseConnection: mongoose.connection })
 //   })
 // )
