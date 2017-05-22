@@ -3,11 +3,13 @@ const User = mongoose.model('User')
 const promisify = require('es6-promisify')
 const jwt = require('jwt-simple')
 const moment = require('moment')
+const Tokens = require('csrf')
 
-function tokenForUser(user) {
+function tokenForUser(user, req) {
   // const timestamp = moment().toDate().getTime()
   const timestamp = moment()
   const exp = moment(timestamp).add(30, 'm')
+  const tokens = new Tokens()
 
   // first arg is the info we want encrypted
   // 2nd arg is the secret we want to encode with
@@ -18,6 +20,7 @@ function tokenForUser(user) {
       email: user.email,
       name: user.name,
       gravatar: user.gravatar,
+      csrf: tokens.create(process.env.SECRET),
       iat: timestamp // issue at time
     },
     process.env.SECRET
@@ -139,7 +142,7 @@ exports.signin = function(req, res, next) {
   //   expire: new Date() + 9999
   // })
   // res.send({ token: 'cookie set' })
-  const token = tokenForUser(req.user)
+  const token = tokenForUser(req.user, req)
   // res.cookie('jwtServer', token, {
   //   expire: new Date() + 9999,
   //   httpOnly: true

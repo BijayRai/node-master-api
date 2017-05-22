@@ -26,6 +26,7 @@ const app = express()
 // app.set('views', path.join(__dirname, 'views')) // this is the folder where we keep our pug files
 // app.set('view engine', 'pug') // we use the engine pug, mustache or EJS work great too
 app.use(cookieParser())
+
 var originsWhitelist = [
   'http://localhost:3000', //this is my front-end url for development
   'http://www.myproductionurl.com'
@@ -68,13 +69,11 @@ app.use(expressValidator())
 // app.use(
 //   session({
 //     secret: process.env.SECRET,
-//     key: process.env.KEY,
+//     // key: process.env.KEY,
 //     resave: false,
-//     saveUninitialized: false,
-//     path: '/',
-//     domain: '',
-//     cookie: { secure: false },
-//     store: new MongoStore({ mongooseConnection: mongoose.connection })
+//     saveUninitialized: false
+//     // cookie: { secure: false }
+//     // store: new MongoStore({ mongooseConnection: mongoose.connection })
 //   })
 // )
 
